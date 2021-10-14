@@ -614,9 +614,10 @@ class WeBWorKXBlock(
         return self._grace_timedelta
 
     def set_problem_period(self):
-        # Ginkgo on the face
-        Now = datetime.datetime.now()
+        # ----Ginkgo
         # Now = datetime.datetime.now(datetime.timezone.utc)
+        Now = datetime.datetime.now()
+        #----Ginkgo
         self.set_due_date()
         DueDate = self.due
         GraceDuration = self.grace_timedelta
@@ -763,7 +764,10 @@ class WeBWorKXBlock(
     def get_current_auth_data(self):
         if self.settings_type == 1:
             # Use the course-wide settings for the relevant ww_server_id
-            return self.main_settings.get('server_settings',{}).get(self.ww_server_id, {}).get('auth_data',{})
+            #-----Ginkgo hack
+            return self.main_settings.get('server_settings',{}).get(u'TechnionWW2', {}).get('auth_data',{})
+            # return self.main_settings.get('server_settings',{}).get(self.ww_server_id, {}).get('auth_data',{})
+            #-----Ginkgo hack
         elif self.settings_type == 2:
             # Use the locally set values from the specific XBlock instance
             return self.auth_data
@@ -2094,7 +2098,10 @@ class WeBWorKXBlock(
             response['message'] = "fixme" # e.message
 
         return Response(
+                #---Ginkgo
                 text = json.dumps(response).decode(),
+                # text = json.dumps(response),
+                #----Ginkgo
                 content_type =  "application/json",
                 status = 200,
             )
