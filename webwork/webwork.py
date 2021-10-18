@@ -739,9 +739,7 @@ class WeBWorKXBlock(
         self.clear_current_server_settings()
         if self.settings_type == 1:
             # Use the course-wide settings for the relevant ww_server_id
-            #---Ginkgo hack
-            self.current_server_settings.update(self.main_settings.get('server_settings',{}).get(u'TechnionWW2', {}))
-            # self.current_server_settings.update(self.main_settings.get('server_settings',{}).get(self.ww_server_id, {}))
+            self.current_server_settings.update(self.main_settings.get('server_settings',{}).get(self.ww_server_id, {}))
             # Keep auth_data outside the current_server_settings field (which gets into the DB records of user_state/submissions).
             self.current_server_settings.pop("auth_data", None)
         elif self.settings_type == 2:
@@ -764,10 +762,7 @@ class WeBWorKXBlock(
     def get_current_auth_data(self):
         if self.settings_type == 1:
             # Use the course-wide settings for the relevant ww_server_id
-            #-----Ginkgo hack
-            return self.main_settings.get('server_settings',{}).get(u'TechnionWW2', {}).get('auth_data',{})
-            # return self.main_settings.get('server_settings',{}).get(self.ww_server_id, {}).get('auth_data',{})
-            #-----Ginkgo hack
+            return self.main_settings.get('server_settings',{}).get(self.ww_server_id, {}).get('auth_data',{})
         elif self.settings_type == 2:
             # Use the locally set values from the specific XBlock instance
             return self.auth_data
