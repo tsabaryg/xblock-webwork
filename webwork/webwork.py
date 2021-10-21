@@ -62,16 +62,25 @@ from webob.response import Response # Uses WSGI format(Web Server Gateway Interf
 from xblockutils.studio_editable import StudioEditableXBlockMixin
 from xblock.scorable import ScorableXBlockMixin, Score
 # -------------------Start of Ginkgo-----
+# The next import does not work in Ginkgo and is not really used:
 #from xblock.completable import XBlockCompletionMode
+# ---
+ The next import does not work in Ginkgo. Without it gradeperiod is being forces to None:
 # from cms.djangoapps.models.settings.course_grading import CourseGradingModel
+# ----------------
+# The following import for python 3.8 works:
+#    from enum import Enum, unique
+# But for python 2.7 (Ginkgo) we need to manually provide a backported IntFlag
+from enum import unique
+from IntFlagBackport import IntFlag
 # -------------------End of Ginkgo-------
-from enum import Enum, unique
+
 from xmodule.util.duedate import get_extended_due_date
 
-
 # -------------------Start of Ginkgo-----
-# from common.djangoapps.util.date_utils import get_default_time_display
 # The recommended manner to format datetime for display in Studio and LMS is to use:
+# from common.djangoapps.util.date_utils import get_default_time_display
+# Ginkgo - this import is now working. FIXME
 # -------------------End of Ginkgo-------
 
 # Need to support making an encrypted JWT for use by the Standalone renderer
@@ -335,197 +344,7 @@ HTML2XML_FORM_SETTINGS_TO_SAVE = [
 class WeBWorKXBlockError(RuntimeError):
     pass
 # -------------------Start of Ginkgo - the below code was copied from the          --------
-# ---- Lilach enum.py to support IntFlag class that is used by us but was not defined  ----
-# ---- at the time of Ginko release
-class IntFlag(Enum):
-    """
-    Support for flags
-    """
 
-    # def _generate_next_value_(name, start, count, last_values):
-    #     """
-    #     Generate the next value when not given.
-
-    #     name: the name of the member
-    #     start: the initial start value or None
-    #     count: the number of existing members
-    #     last_value: the last value assigned or None
-    #     """
-    #     if not count:
-    #         return start if start is not None else 1
-    #     for last_value in reversed(last_values):
-    #         try:
-    #             high_bit = _high_bit(last_value)
-    #             break
-    #         except Exception:
-    #             raise ValueError('Invalid Flag value: %r' % last_value)
-    #     return 2 ** (high_bit+1)
-
-    # @classmethod
-    # def _missing_(cls, value):
-    #     """
-    #     Returns member (possibly creating it) if one can be found for value.
-    #     """
-    #     original_value = value
-    #     if value < 0:
-    #         value = ~value
-    #     possible_member = cls._create_pseudo_member_(value)
-    #     if original_value < 0:
-    #         possible_member = ~possible_member
-    #     return possible_member
-
-    # @classmethod
-    # def _create_pseudo_member_(cls, value):
-    #     """
-    #     Create a composite member iff value contains only members.
-    #     """
-    #     pseudo_member = cls._value2member_map_.get(value, None)
-    #     if pseudo_member is None:
-    #         # verify all bits are accounted for
-    #         _, extra_flags = _decompose(cls, value)
-    #         if extra_flags:
-    #             raise ValueError("%r is not a valid %s" % (value, cls.__name__))
-    #         # construct a singleton enum pseudo-member
-    #         pseudo_member = object.__new__(cls)
-    #         pseudo_member._name_ = None
-    #         pseudo_member._value_ = value
-    #         # use setdefault in case another thread already created a composite
-    #         # with this value
-    #         pseudo_member = cls._value2member_map_.setdefault(value, pseudo_member)
-    #     return pseudo_member
-
-    def __contains__(self, other):
-        """
-        Returns True if self has at least the same flags set as other.
-        """
-        if not isinstance(other, self.__class__):
-            raise TypeError(
-                "unsupported operand type(s) for 'in': '%s' and '%s'" % (
-                    type(other).__qualname__, self.__class__.__qualname__))
-        return other._value_ & self._value_ == other._value_
-
-    def __repr__(self):
-        cls = self.__class__
-        if self._name_ is not None:
-            return '<%s.%s: %r>' % (cls.__name__, self._name_, self._value_)
-        members, uncovered = _decompose(cls, self._value_)
-        return '<%s.%s: %r>' % (
-                cls.__name__,
-                '|'.join([str(m._name_ or m._value_) for m in members]),
-                self._value_,
-                )
-
-    def __str__(self):
-        cls = self.__class__
-        if self._name_ is not None:
-            return '%s.%s' % (cls.__name__, self._name_)
-        members, uncovered = _decompose(cls, self._value_)
-        if len(members) == 1 and members[0]._name_ is None:
-            return '%s.%r' % (cls.__name__, members[0]._value_)
-        else:
-            return '%s.%s' % (
-                    cls.__name__,
-                    '|'.join([str(m._name_ or m._value_) for m in members]),
-                    )
-
-    def __bool__(self):
-        return bool(self._value_)
-
-    def __or__(self, other):
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-        return self.__class__(self._value_ | other._value_)
-
-    def __and__(self, other):
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-        return self.__class__(self._value_ & other._value_)
-
-    def __xor__(self, other):
-        if not isinstance(other, self.__class__):
-            return NotImplemented
-        return self.__class__(self._value_ ^ other._value_)
-
-    def __invert__(self):
-        members, uncovered = _decompose(self.__class__, self._value_)
-        inverted = self.__class__(0)
-        for m in self.__class__:
-            if m not in members and not (m._value_ & self._value_):
-                inverted = inverted | m
-        return self.__class__(inverted)
-
-
-class IntFlag(int, IntFlag):
-    """
-    Support for integer-based Flags
-    """
-
-    # @classmethod
-    # def _missing_(cls, value):
-    #     """
-    #     Returns member (possibly creating it) if one can be found for value.
-    #     """
-    #     if not isinstance(value, int):
-    #         raise ValueError("%r is not a valid %s" % (value, cls.__name__))
-    #     new_member = cls._create_pseudo_member_(value)
-    #     return new_member
-
-    # @classmethod
-    # def _create_pseudo_member_(cls, value):
-    #     """
-    #     Create a composite member iff value contains only members.
-    #     """
-    #     pseudo_member = cls._value2member_map_.get(value, None)
-    #     if pseudo_member is None:
-    #         need_to_create = [value]
-    #         # get unaccounted for bits
-    #         _, extra_flags = _decompose(cls, value)
-    #         # timer = 10
-    #         while extra_flags:
-    #             # timer -= 1
-    #             bit = _high_bit(extra_flags)
-    #             flag_value = 2 ** bit
-    #             if (flag_value not in cls._value2member_map_ and
-    #                     flag_value not in need_to_create
-    #                     ):
-    #                 need_to_create.append(flag_value)
-    #             if extra_flags == -flag_value:
-    #                 extra_flags = 0
-    #             else:
-    #                 extra_flags ^= flag_value
-    #         for value in reversed(need_to_create):
-    #             # construct singleton pseudo-members
-    #             pseudo_member = int.__new__(cls, value)
-    #             pseudo_member._name_ = None
-    #             pseudo_member._value_ = value
-    #             # use setdefault in case another thread already created a composite
-    #             # with this value
-    #             pseudo_member = cls._value2member_map_.setdefault(value, pseudo_member)
-    #     return pseudo_member
-
-    def __or__(self, other):
-        if not isinstance(other, (self.__class__, int)):
-            return NotImplemented
-        result = self.__class__(self._value_ | self.__class__(other)._value_)
-        return result
-
-    def __and__(self, other):
-        if not isinstance(other, (self.__class__, int)):
-            return NotImplemented
-        return self.__class__(self._value_ & self.__class__(other)._value_)
-
-    def __xor__(self, other):
-        if not isinstance(other, (self.__class__, int)):
-            return NotImplemented
-        return self.__class__(self._value_ ^ self.__class__(other)._value_)
-
-    __ror__ = __or__
-    __rand__ = __and__
-    __rxor__ = __xor__
-
-    def __invert__(self):
-        result = self.__class__(~self._value_)
-        return result
 
 # -------------------End of Ginkgo-------
 
