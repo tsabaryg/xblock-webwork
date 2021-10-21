@@ -5,5 +5,4 @@ path.py
 web-fragments
 XBlock
 xblock-utils
-# cryptography==3.2.2
-# jwcrypto==0.9.1
+jwcrypto==0.9.1
